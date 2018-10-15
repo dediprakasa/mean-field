@@ -7,17 +7,17 @@ program main
 	
 ! For use in MPI environment
 
-	integer, parameter :: nprocmax
-	integer :: ierr, myid, numtasks, numextra, sourceid, destid
+	integer, parameter :: nprocmax = 200
+	integer :: ierr, myid, nproc, numtasks, numextra, sourceid, destid
 	integer :: nstart(0:nprocmax-1), nfinish(0:nprocmax-1), numdata(0:nprocmax-1)
 	integer :: status(MPI_STATUS_SIZE)
 
 ! Declaration of variables
 
 	real*8, external :: fermi, rtbis, integrand
-	integer ::
+	integer :: i, j, counter, l, m, n, ll, mm, nn, iconv
 	real*8 :: time_start, time_finish, time_elapsed
-	character*50 :: DOS_Up, DOS_down, DOS_total, mu_data, n_data
+	character*50 :: DOS_up_file, DOS_down_file, DOS_total_file, mu_file, n_file
 
 	call MPI_INIT(ierr)
 	call MPI_COMM_SIZE(MPI_COMM_WORLD, nproc, ierr)
@@ -45,11 +45,11 @@ program main
 		read(10,*) Niter
 		read(10,*) tol_mu
 		read(10,*) tol_sigma
-		read(10,*) DOS_Up
-		read(10,*) DOS_Down
-		read(10,*) DOS_total
-		read(10,*) mu_data
-		read(10,*) n_data
+		read(10,*) DOS_up_file
+		read(10,*) DOS_down_file
+		read(10,*) DOS_total_file
+		read(10,*) mu_file
+		read(10,*) n_file
 		
 		close(10)
 	end if
@@ -71,11 +71,11 @@ program main
         call MPI_BCAST(Niter, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, ierr)
         call MPI_BCAST(tol_mu, 1, MPI_DOUBLE_PRECISION, 0, MPI_COMM_WORLD, ierr)
         call MPI_BCAST(tol_sigma, 1, MPI_DOUBLE_PRECISION, 0, MPI_COMM_WORLD, ierr)
-        call MPI_BCAST(DOS_Up, 1, MPI_CHARACTER, 0, MPI_COMM_WORLD, ierr)
-        call MPI_BCAST(DOS_Down, 1, MPI_CHARACTER, 0, MPI_COMM_WORLD, ierr)
-        call MPI_BCAST(DOS_total, 1, MPI_CHARACTER, 0, MPI_COMM_WORLD, ierr)
-        call MPI_BCAST(mu_data, 1, MPI_CHARACTER, 0, MPI_COMM_WORLD, ierr)
-        call MPI_BCAST(n_data, 1, MPI_CHARACTER, 0, MPI_COMM_WORLD, ierr)
+        call MPI_BCAST(DOS_up_file, 1, MPI_CHARACTER, 0, MPI_COMM_WORLD, ierr)
+        call MPI_BCAST(DOS_down_file, 1, MPI_CHARACTER, 0, MPI_COMM_WORLD, ierr)
+        call MPI_BCAST(DOS_total_file, 1, MPI_CHARACTER, 0, MPI_COMM_WORLD, ierr)
+        call MPI_BCAST(mu_file, 1, MPI_CHARACTER, 0, MPI_COMM_WORLD, ierr)
+        call MPI_BCAST(n_file, 1, MPI_CHARACTER, 0, MPI_COMM_WORLD, ierr)
 
 	Nsites = N1D**3
 	Nfilling = Nfilling*real(2*Nsites, 8)
@@ -112,15 +112,12 @@ program main
 		id_mat(i,i) = 1.d0
 	end do
 
-! Generate Hamiltonian matrix
-
-	(i,j,k) = ind
-	
+! Generate Hamiltonian matrix	
 	counter = 0
-	do u = 0, N1D - 1
-		do v = 0, N1D - 1
-			do w = 0, N1D - 1
-				coord(u, v, w) = counter + 1
+	do l = 0, N1D - 1
+		do m = 0, N1D - 1
+			do n = 0, N1D - 1
+				coord(l, m, n) = counter + 1
 			end do
 		end do
 	end do
@@ -191,8 +188,8 @@ program main
 	end if
 	
 	do j = 1, Nsites
-		sigma(j, j, :) 			  = U*n_down(j)
-		sigma(j+Nsites, j+Nsites) = U*n_up(j)
+		sigma(j, j, :) 			     = U*n_down(j)
+		sigma(j+Nsites, j+Nsites, :) = U*n_up(j)
 	end do
 	
 ! Arrange the job sharing by distributing the real frequency
@@ -256,7 +253,7 @@ program main
 			G(:,:,n) = Gdummy(:,:)
 			
 			do j = 1, 2*Nsites
-				PDOS(j,n) = -(1.d0/pi)*aimag((Gj,j,n))
+				PDOS(j,n) = -(1.d0/pi)*aimag((G(j,j,n)))
 			end do
 		end do
 		
@@ -270,20 +267,21 @@ program main
 				 call MPI_RECV(PDOS(1,nstart(sourceid)), 2*Nsites*numdata(sourceid), &
        			 &       		MPI_DOUBLE_PRECISION, sourceid, 111,				&
        			 &				MPI_COMM_WORLD, status, ierr)
+       		end do
 		 end if
 			
 		if (myid == 0) then
 			norm = 0.d0
 			do n = 1, Nw
-				DOS_Up(n) 	= 0.d0
-				DOS_Down(n) = 0.d0
+				DOS_up(n) 	= 0.d0
+				DOS_down(n) = 0.d0
 				
 				do j = 1, Nsites
-					DOS_Up(n) 	= DOS_Up(n) + PDOS(j, n)
+					DOS_up(n) 	= DOS_up(n) + PDOS(j, n)
 					DOS_down(n) = DOS_down(n) + PDOS(j+Nsites, n)			
 				end do
 				
-				DOS_total(n) = DOS_Up(n) + DOS_Down(n)
+				DOS_total(n) = DOS_up(n) + DOS_down(n)
 				norm 		 = norm + DOS_total(n)*wfreq(n)
 			end do
 		
@@ -295,7 +293,7 @@ program main
 			n_number(:) = 0.d0
 			do j = 1, 2*Nsites
 				do n = 1, Nw
-					nn(j) =  nn(j) + PDOS(j, n)*fermi(mu, T, w(n))*wfreq(n)
+					n_number(j) =  n_number(j) + PDOS(j, n)*fermi(mu, T, w(n))*wfreq(n)
 				end do
 			end do
 		end if
@@ -304,21 +302,12 @@ program main
 		&				MPI_DOUBLE_PRECISION, 0, &
 		&				MPI_COMM_WORLD, ierr)	
 		
-		sigma_calc(:,:)  = 0.d0
-		error_sigma_init = 0.d0
-		do n = nstart(myid), nfinish(myid)
-			Gdummy(:,:) = G(:,:,n)
-			
-			! Matrix inversion
-			call zgetrf(2*Nsites, 2*Nsites, Gdummy, 2*Nsites, ipiv, info)
-			call zgetri(2*Nsites, Gdummy, 2*Nsites, ipiv, work, 2*2*Nsites, info)
-		
-			G_inv(:,:,n) 	= Gdummy(:,:)
-			G_mf_inv(:,:,n) = G_inv(:,:,n) + sigma(:,:,n)
-			
+		sigma_calc(:,:,:) = 0.d0
+		error_sigma_init  = 0.d0
+		do n = nstart(myid), nfinish(myid)	
 			do j = 1, Nsites
-				sigma_calc(j,j) 			  = n_number(j+Nsites)*U
-				sigma_calc(j+Nsites,j+Nsites) = n_number(j)*U
+				sigma_calc(j, j, n) 			 = n_number(j+Nsites)*U
+				sigma_calc(j+Nsites,j+Nsites, n) = n_number(j)*U
 			end do
 			
 			! Error test
@@ -334,13 +323,13 @@ program main
 			write(*,*) 'Error =', error_sigma
 			write(*,*) 'Norm =', norm
 			open(unit=10, file=DOS_Total_file, status='unknown')
-			open(unit=11, file=DOS_Up_file, status='unknown')
-			open(unit=12, file=DOS_Down_file, status='unknown')
-			open(unit=13, file=mu_file, status='unknown')	
+			open(unit=11, file=DOS_up_file,	   status='unknown')
+			open(unit=12, file=DOS_down_file,  status='unknown')
+			open(unit=13, file=mu_file, 	   status='unknown')	
 			
 			do n = 1, Nw
 				write(10,*) w(n), DOS_total
-				write(11,*) w(n), DOS_Up
+				write(11,*) w(n), DOS_up
 				write(12,*) w(n), DOS_down
 			end do
 			
@@ -369,10 +358,10 @@ program main
 
 ! Reconstruct the Green Function using the already converged <n(j)>
 	do n = 1, Nw ! Iterating over frequency omega
-		sigma_calc(:,:) = 0.d0
+		sigma_calc(:,:,:) = 0.d0
 		do j = 1, Nsites
-			sigmac(j, j)				= n_number(j+Nsites)*U
-			sigmac(j+Nsites, j+Nsites) 	= n_number(j)*U
+			sigma_calc(j, j, n) 			 = n_number(j+Nsites)*U
+			sigma_calc(j+Nsites,j+Nsites, n) = n_number(j)*U
 		end do	
 		
 		Gdummy(:,:) = (w(n) + im*eta)*id_mat(:,:) - H(:,:) - sigma(:,:,n)
@@ -384,7 +373,7 @@ program main
 		G(:,:,n) = Gdummy(:,:)
 			
 		do j = 1, 2*Nsites
-			PDOS(j,n) = -(1.d0/pi)*aimag((Gj,j,n))
+			PDOS(j,n) = -(1.d0/pi)*aimag(G(j,j,n))
 		end do
 	end do
 
@@ -406,7 +395,7 @@ program main
 	
 	stop
 	
-end program
+end program main
 
 !====================================================================
 
@@ -420,7 +409,7 @@ function integrand(x)
 	
 	total = 0.d0
 	do i = 1, Nw
-		total = total + DOS(i)*fermi(x,T,w(i))*wfreq(i)
+		total = total + DOS_total(i)*fermi(x,T,w(i))*wfreq(i)
 	end do
 	
 	integrand = nfilling - (total*2*Nsites/norm)

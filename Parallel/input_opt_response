@@ -1,0 +1,12 @@
+0.d0		wwmin	the minimum real-frequency value (in eV) defined for the OptCond data (set wwmin=0.d0 as DEFAULT)
+18.d0		wwmax	the maximum real-frequency value (in eV) defined for the OptCond data
+1		stepww	integer representing the frequency increment (stepww*dw) desired in the OptCond data 
+1.d0		eps_infty  epsilon1 at w=infinity (eps_infty>1.d0 if assumed there is spontaneous prolarization, otherwise eps_infty=1.d0)
+'sigma1_xx.dat'	the real part of the Optical Conductivity along xx direction output file
+'sigma1_yy.dat'	the real part of the Optical Conductivity along yy direction output file
+'sigma1_xy.dat'	the real part of the Optical Conductivity along xy direction output file
+'sigma2.dat'	the imaginary part of the Optical Conductivity output file
+'epsilon1.dat'	the real part of the Dielectric Function output file
+'epsilon2.dat'	the imaginary part of the Dielectric Function output file
+'LF.dat'	the Loss Function output file
+
