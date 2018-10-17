@@ -145,6 +145,8 @@ program main
 					H(i, j) = -t2
 				else if ((abs(l - ll) == 1 .and. abs(m - mm) == 1 .and. abs(n - nn) == 0)) then
 					H(i, j) = -t3
+				else
+					H(i, j) = 0.d0
 				end if
 			end if
 		end do
@@ -160,23 +162,23 @@ program main
 	sigma(:, :, :) = 0.d0
 
 	! For U>0, setup initial occupation number with AFM configuration
-	n_up(ind(0, 0, 0))   = 1.d0
-	n_down(ind(0, 0, 0)) = abs(1.d0 - n_up(ind(1, 1, 1)))
+	n_up(coord(0, 0, 0))   = 1.d0
+	n_down(coord(0, 0, 0)) = abs(1.d0 - n_up(coord(1, 1, 1)))
 	do n = 1, N1D - 1
-		n_up(ind(0, 0 ,n))   = abs(1.d0 - n_up(ind(0, 0, n-1)))
-		n_down(ind(0, 0 ,n)) = abs(1.d0 - n_up(ind(0, 0, n)))
+		n_up(coord(0, 0 ,n))   = abs(1.d0 - n_up(coord(0, 0, n-1)))
+		n_down(coord(0, 0 ,n)) = abs(1.d0 - n_up(coord(0, 0, n)))
 	end do
 	do m = 1, N1D - 1
 	do n = 0 ,N1D - 1
-		n_up(ind(0, m, n))   = abs(1.d0 - n_up(ind(0, m-1, n)))
-		n_down(ind(0, m, n)) = abs(1.d0 - n_up(ind(0, m, n)))
+		n_up(coord(0, m, n))   = abs(1.d0 - n_up(coord(0, m-1, n)))
+		n_down(coord(0, m, n)) = abs(1.d0 - n_up(coord(0, m, n)))
 	end do
 	end do
 	do l = 1, N1D - 1
 	do m = 0, N1D - 1
 	do n = 0, N1D - 1
-		n_up(ind(l, m, n))   = abs(1.d0 - n_up(ind(l-1, m, n)))
-		n_down(ind(l, m, n)) = abs(1.d0 - n_up(ind(l, m, n)))
+		n_up(coord(l, m, n))   = abs(1.d0 - n_up(coord(l-1, m, n)))
+		n_down(coord(l, m, n)) = abs(1.d0 - n_up(coord(l, m, n)))
 	end do
 	end do
 	end do

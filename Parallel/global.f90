@@ -12,10 +12,10 @@ module global
 ! Matrices
 	real*8, 	dimension(:),	  allocatable :: wfreq, w, n_up, n_down, DOS_up, DOS_down, DOS_total, n_number
 	real*8, 	dimension(:,:),	  allocatable :: id_mat, H, PDOS, del_sigma
-	real*8,		dimension(:,:,:), allocatable :: coord, sigma, sigma_calc
+	real*8,		dimension(:,:,:), allocatable :: sigma, sigma_calc
 	complex*16, dimension(:,:),	  allocatable :: Gdummy
 	complex*16, dimension(:,:,:), allocatable :: G
-	integer, 	dimension(:,:,:), allocatable :: ind
+	integer, 	dimension(:,:,:), allocatable :: coord
 	
 ! Arrays and variables for LAPACK
 	complex*16, dimension(:),	  allocatable :: work ! dimension(2*2*Nsites)
