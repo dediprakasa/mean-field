@@ -15,6 +15,7 @@ subroutine allocation
 	allocate(work(2*2*Nsites))
 	allocate(ipiv(2*Nsites))
 	allocate(G(2*Nsites, 2*Nsites, Nw))
+	allocate(PDOS(2*Nsites, Nw))
 	allocate(DOS_up(Nw))
 	allocate(DOS_down(Nw))
 	allocate(DOS_total(Nw))
