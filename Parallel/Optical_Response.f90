@@ -1,6 +1,6 @@
 	subroutine Optical_Response(myid)
 	use MPI
-	use Global, only: N1D,Nsites,wmin,wmax,Nw,dw,w,G,H,ind,mu,t1,t2,t3,T,pi,im
+	use Global, only: N1D,Nsites,wmin,wmax,Nw,dw,w,G,H,coord,mu,t1,t2,t3,T,pi,im
         implicit none
 
 
@@ -88,10 +88,10 @@
 		do mp=0,N1D-1
 		do np=0,N1D-1		
 			if ((abs(l-lp)==1).and.(abs(m-mp)==0).and.(abs(n-np)==0)) then
-				vxmat(ind(l,m,n),ind(lp,mp,np))=sign(1,l-lp)*im*H(ind(l,m,n),ind(lp,mp,np))	
+				vxmat(coord(l,m,n),coord(lp,mp,np))=sign(1,l-lp)*im*H(coord(l,m,n),coord(lp,mp,np))	
 			end if
 			if ((abs(l-lp)==0).and.(abs(m-mp)==1).and.(abs(n-np)==0)) then
-				vymat(ind(l,m,n),ind(lp,mp,np))=sign(1,m-mp)*im*H(ind(l,m,n),ind(lp,mp,np))	
+				vymat(coord(l,m,n),coord(lp,mp,np))=sign(1,m-mp)*im*H(coord(l,m,n),coord(lp,mp,np))	
 			end if
 		end do
 		end do

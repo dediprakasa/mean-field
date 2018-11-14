@@ -99,7 +99,7 @@ program main
 	end do
 
 	do i = 3, Nw-2, 2
-		wfreq(1) = 2.d0*dw/3.d0
+		wfreq(i) = 2.d0*dw/3.d0
 	end do
 
 	wfreq(Nw) = dw/3.d0
