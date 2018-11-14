@@ -1,0 +1,21 @@
+5       N1D
+0.d0	eps
+1.d0	t1
+0.d0	0.70710678118	t2
+0.d0	0.57735026919	t3	
+501		Nw
+-8.d0	wmin
+8.d0	wmax
+0.5d0	nfilling/(2*Nsites)
+0.d0	U
+0.d0	T (temperature in Kelvin)
+5.d-2	eta
+0.1d0	alpha (mixing)
+300		Niter
+1.d-5	tolmu
+1.d-3	tolsigma
+"DOS_up.dat" 	DOSupfile
+"DOS_down.dat"	DOSdownfile
+"DOS_tot.dat"	DOStotfile
+"mu.dat"	mufile
+"nnn.dat"	nnnfile
